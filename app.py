@@ -402,22 +402,22 @@ else:
 
         with st.chat_message("model"):
             try:
-                # Use send_message_stream for word-by-word generation
+                # 1. Use send_message_stream for word-by-word generation
                 response_stream = st.session_state.chat_session.send_message_stream(prompt)
 
-                # Generator to yield text chunks for Streamlit
+                # 2. Generator yielding text chunks directly to Streamlit UI
                 def stream_data():
                     for chunk in response_stream:
                         if chunk.text:
                             yield chunk.text
 
-                # Write stream to the UI and capture the full response
+                # Native Streamlit streaming to display chunks instantly without delay
                 full_response = st.write_stream(stream_data())
 
-                # Append the completed message to the session history
+                # Append completed response to session messages
                 st.session_state.messages.append({"role": "model", "content": full_response})
 
-                # Automatically persist updated conversation to SQLite
+                # 3. Non-blocking Database Save: Save strictly AFTER stream rendering finishes
                 save_session(
                     st.session_state.session_id,
                     st.session_state.initial_mood,
